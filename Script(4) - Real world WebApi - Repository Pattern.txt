@@ -1,0 +1,175 @@
+BUILD A REAL WORLD WEB API
+
+ADD REPOSITORY PATTERN
+note that it would be very difficult to create tests for Post, Put and Delete
+
+note that controller provides interface for Webapi interacting with MVC, and supports EF and maps an updated job and initializes database
+
+introduce repository pattern for multiple reasons
+enable easy testing of create, update and delete
+follow single responsibility principle
+
+a repository will be responsible for supporting EF, mapping an updated job and initializing database
+its methods will be similar but different than controller's methods - GetList() GetById(int) Save(job) and Delete(int)
+
+
+create a JobRepository class in WebApi project Models folder 
+add constructor that injects DSCContext to a field
+
+create a JobRepository folder in test project
+GitHub copy test class When_GetList_executes with Then_a_complete_list_of_seed_jobs_is_returned test 
+
+add GetList() method to JobRepository
+run test - fails => implement method  - return _context.Jobs.ToArray();
+run test - fails => add database initialization to repository
+run test - passes
+
+create test class
+    
+    [Collection("DSC")]
+    public class When_GetById_executes
+    {
+
+        [Theory, InlineData(1), InlineData(2)]
+        public void With_id_of_any_seed_job_Then_that_seed_job_is_returned(int id)
+        {
+            Job job;
+
+            using (var context = DSCContextFactory.InMemoryContext())
+            {
+                var repository = new Models.JobRepository(context);
+
+                job = repository.GetById(id);
+            }
+
+            var seedDataJob = SeedData.Jobs().FirstOrDefault(j => j.Name.EndsWith(id.ToString()));
+            Assert.True(job == seedDataJob);
+        }
+    }
+
+add GetById(int) to JobRepository and implement method
+run test - fails => seed data does not contain id values
+add Comparator class with JobsAreIdentical() method to test project
+run test - passes
+
+create test class 
+
+    [Collection("DSC")]
+    public class When_Save_executes
+    {
+        [Fact]
+        public void With_a_new_job_Then_a_new_job_is_added_and_returned_with_a_new_id_value()
+        {
+            var newJob = new Job{Name = "new job", IsCompleted = false};
+            Job savedJob;
+
+            int initialJobCount;
+            int newJobCount;
+
+            using (var context = DSCContextFactory.InMemoryContext())
+            {
+                var repository = new Models.JobRepository(context);
+
+                initialJobCount = context.Jobs.Count();
+
+                savedJob = repository.Save(newJob);
+
+                newJobCount = context.Jobs.Count();
+            }
+
+            Assert.True(newJobCount == initialJobCount + 1, "Job count is incorrect");
+
+            Assert.True(Comparator.JobsAreIdentical(newJob, savedJob), "Jobs are not identical");
+
+            Assert.True(savedJob.Id == newJobCount, "Job has incorrect Id value");
+        }
+
+add Save(Job) to JobRepository
+run test - fails => implement method =>
+            _context.Add(jobToSave);
+            _context.SaveChanges();
+	    return jobToSave;
+run test - passes
+
+add test 
+
+        [Theory, InlineData(1), InlineData(2)]
+        public void With_a_existing_job_Then_an_existing_job_is_edited_and_returned(int id)
+        {
+            Job existingJob;
+            Job savedJob;
+
+            using (var context = DSCContextFactory.InMemoryContext())
+            {
+                var repository = new Models.JobRepository(context);
+
+                existingJob = context.Jobs.Find(id);
+
+                existingJob.Name = existingJob.Name + "{mod}";
+                existingJob.IsCompleted = !existingJob.IsCompleted;
+
+                savedJob = repository.Save(existingJob);
+            }
+
+            Assert.True(existingJob == savedJob, "Jobs are not equal");
+        }
+
+run test - fails => refactor Save(Job) method =>
+        public Job Save(Job jobToSave)
+        {
+            if (jobToSave.Id == 0)
+            {
+                _context.Add(jobToSave);
+            }
+            else
+            {
+                Mapper.Map(jobToSave, _context.Jobs.Find(jobToSave.Id));
+            }
+
+            _context.SaveChanges();
+
+            return jobToSave; 
+        }
+implement Mapper.Map() method in WebApi project
+run test - passes
+
+
+GitHub copy test class When_Delete_executes with With_id_of_any_seed_job_Then_that_seed_job_is_deleted_and_is_returned test
+
+add Delete(Job) to JobRepository
+
+run test - fails => implement method =>
+            _context.Remove(_context.Jobs.Find(jobToDelete.Id));
+            _context.SaveChanges();
+
+            return jobToDelete;
+run test - passes
+
+
+INJECT JOBREPOSITORY INTO JOBCONTROLLER
+
+extract an interface from JobRepository
+
+refactor JobController to inject a JobRepository instaed on DSCContext
+refactor JobController methods to use JobRepository
+refactor JobController tests to use JobRepository
+
+run all tests - pass
+
+run in browser - doesn't work
+inject repository int controller in Startup.cs
+
+
+test all Controller action methods in Postman
+
+
+NEXT STEPS -
+fix unit testing with SQLite provider
+
+breakout EntityFramework and domain into separate project
+
+add database initialization unit test with seed data
+
+build and connect to Azure SQL database
+
+add Angular app to consume WebApi

@@ -1,0 +1,47 @@
+BUILD A REAL WORLD WEB API
+
+ADD UNIT TESTS
+note that unit testing automates testing of Web Api instead of manual testing with Postman
+facilitates refactoring, maintenance and extension
+
+add new xUnit Test Project (.NET Core) called DSC.WebApi.Test
+add reference to DSC.WebApi
+
+review xUnit test project
+[Fact] attribute in a public void method within a public class identifies an xUnit test to compiler and test runner
+xUnit Assert Api provides complete testing functionality
+most general method is Assert.True(expression, error message)
+run simple 1==1 test to demonstrate test runner execution
+show Test Explorer and MSTest runner
+show Unit Test Explorer and ReSharper runner
+show dotnet test CLI
+  
+test JobController
+add JobController folder
+create When_Get_without_parameter_executes test class to test Get()
+
+create Then_an_ObjectResult_is_returned test
+try to new up a DSCContext with InMemoryProvider => create DSCContextFactory class in DSC.WebApi with static InMemoryContext() method
+new up a JobController using above InMemoryContext()
+call Get() and confirm result is an ObjectResult
+note that "bad" path cannot be tested
+
+create Then_a_complete_list_of_seed_jobs_is_contained_in_the_ObjectResult test
+rinse and repeat above
+cast result as ObjectResult to expose Value property where data is contained
+confirm there is data, all are type Job and there are 2 jobs
+
+refactor test class to place common code in constructor, leaving only Assert's in tests
+
+create When_Get_with_a_parameter_executes test class to test Get(int)
+
+create Then_an_ObjectResult_is_returned test
+note that you should create at least 3 different tests for different id values
+copy in from GitHub refactored test - Then_correct_result_type_is_returned test and demonstrate [Theory, InlineData()] attribute
+
+copy in from GitHub With_a_valid_parameter_value_Then_a_job_is_contained_in_the_ObjectResult test 
+
+note that some tests fail when all are run in parallel
+add [Collection("DSCTests")] attribute to both test classes to force running in serial
+
+extract seed data and database initialization from controller constructor and use seed data in tests

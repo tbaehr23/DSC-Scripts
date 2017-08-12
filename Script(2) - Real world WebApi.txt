@@ -1,0 +1,28 @@
+BUILD A REAL WORLD WEB API
+
+REAL WORLD means -
+real SQL database
+using EntityFramework Core to
+	connect to SQL database and handle data access
+	build database using CodeFirst
+a complex domain of business objects with relationships
+sample seed data to test against
+unit tests
+SOLID principles to facilitate maintenance and extension
+asynchronous behavior
+message queue
+publish to Azure
+dockerize
+
+NEXT STEPS -
+add unit tests
+
+add repository pattern
+
+breakout EntityFramework and domain into separate project
+
+add database initialization unit test with seed data
+
+build and connect to Azure SQL database
+
+add Angular app to consume WebApi

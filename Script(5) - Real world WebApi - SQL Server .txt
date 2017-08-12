@@ -1,0 +1,94 @@
+BUILD A REAL WORLD WEB API
+
+ADD SQL SERVER
+
+note that EF Code First will be used to create the database from DbContext and business domain objects in code
+note that the business domain will probably become very complex with many (perhaps hundreds or more) domain objects with various relationships
+note that EF Code First configuration (either attributes or fluent Api) will contain the database design and requirements
+note that the database will be continuously modified and extended
+note that EF Code First migrations will document these design changes and allow regression
+
+this will become a lot of code and is a lot of responsibility that should not belong in the WebApi project
+
+ 
+add a new .Net Standard Class Library project called DSC.Database 
+this project will be responsible for the design and management of the business domain and the database that models it
+.NET Standard class library allows project to be compatible with multiple runtimes - .NETCore, .NETFramework, Mono/Xamarin
+.NET Core class library is only compatible with .NETCore runtime
+
+add Microsoft.EntityFrameworkCore.SqlServer to DSC.Database project
+move DSCContext to project root
+add new folder to project called Domain
+move Job to project Domain folder
+
+in WebApi project add reference to DSC.Database
+
+build solution and import DSC.Database and DSC.Database.Domain throughout WEbApi and WebApi.Test code base
+
+run tests to confirm successful refactoring
+[Commit]
+    
+ADD MIGRATIONS TO ENABLE CODE FIRST
+migrations and Code First are contained in Microsoft.EntityFrameworkCore.Tools and this library must be contained in an executable project
+
+add xUnit Test Project called DSC.Database.Initialize
+add Microsoft.EntityFrameworkCore.Tools
+add reference to DSC.Database project
+
+create database called DSC in (localdb)\MSSQLLocalDb
+add parameterless constructor to DSC.Database
+add to DSCContext -
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (optionsBuilder.IsConfigured == false)
+            {
+                optionsBuilder.UseSqlServer(
+                    @"Data Source=(localdb)\MSSQLLocalDb;Initial Catalog=DSC;
+                       Integrated Security=True;");
+            }
+            base.OnConfiguring(optionsBuilder);
+
+        }
+
+in PackageManager Console -
+select DSC.Database as default project
+execute Add-Migration -Name init -StartupProject DSC.Database.Initialize
+note Migrations folder and files created in DSC.Database
+
+apply migration files to build database
+execute Update-Database -StartupProject DSC.Database.Initialize
+note that DSC database has been built out with a Jobs table
+[Commit]
+
+ADD TEST TO INITIALIZE DATABASE AND POPULATE IT WITH SEED DATA
+in DSC.Databse.Initialize -
+create Initializer class and move InitializeDatabase(context) to it from DSCContext Factory
+copy SeedData from WebApi project
+remove InitializeDatabase(context) from JobRepository constructor
+add When_initializing_database() test class with test that drops, re-creates and populates database
+
+run test -passes
+note observe data in database Jobs table and add new data
+run test - passes
+observe database re-initialized
+[Commit]
+
+FIX INMEMORY PROVIDER TESTS
+run all tests - inMemory provider tests fail
+move DSCContextFactory to DSC.Database.Initialize
+add EntityFrameworkCore.InMemmory to DSC.Database.Initialize
+add Initializer.InitializeDatabase(context) to InMemoryContext()
+remove SeedData from WebApi
+add reference to DSC.Database.Initialize in WebApi.Test
+build and fix all errors with import
+run all tests - pass
+[Commit]
+
+IMPLEMENT SQLSERVER DATABASE IN WEBAPI
+open WebApi in browser - doesn't work because InMemory provider is used and initialization was removed from Repository constructor
+in Startup.ConfigureServices, change AddDbContext option to UseSqlServer(connection string)
+test in browser
+
+
+
+Server=tcp:qpuyjqb5bh.database.windows.net,1433;Initial Catalog=SIG1;Persist Security Info=False;User ID={your_username};Password={your_password};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;

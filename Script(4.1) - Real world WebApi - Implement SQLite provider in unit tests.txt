@@ -1,0 +1,10 @@
+BUILD A REAL WORLD WEB API
+
+IMPLEMENT SQLITE INMEMORY PROVIDER TO FIX UNIT TESTING
+
+add EntityFrameworkCore.Sqlite database provider to WebApi project
+
+add SqliteContext() method to DSCContextFactory
+
+
+

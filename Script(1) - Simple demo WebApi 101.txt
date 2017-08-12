@@ -1,0 +1,88 @@
+Required install- 
+Visual Studio 2017 w/ .NET Core workflow or .NET Core SDK
+
+Why 
+.NET Core - https://docs.microsoft.com/en-us/dotnet/core/
+ASP .NET Core - https://docs.microsoft.com/en-us/aspnet/core/
+Entity Framework Core - https://docs.microsoft.com/en-us/ef/core/
+
+ASP.NET Core WebApi Resources
+Tutorial - https://docs.microsoft.com/en-us/aspnet/core/tutorials/first-web-api
+Addl Resource - http://www.codemag.com/Magazine/Issue/5ea99ef6-fff5-49cc-98d3-8c63942c4a27
+
+
+Create new ASP.NET Core WebApi project in Visual Studio
+
+Create identical project using CLI and Visual Studio Code
+create DSC and DSC/DSC.WebApi folders
+initialize git in DSC
+in DSC.WebApi - dotnet new webapi
+open DSC folder in Visual Studio Code
+
+RESTful WebApi 101 (REpresetationl State Transfer)
+client makes a REQUEST => server sends a RESPONSE using HTTP message formats
+
+REQUEST message format
+request line consisting of an HTTP verb and a resource identifier
+header consisting of fields specifying such things as: host domain name and port, accept-language, cookie, content length, content type
+optional body containing content
+
+RESPONSE message format
+status line consisting of a status code and message
+header consisting of fields specifying such things as: content type, content length, cookie, server type, location of a created resource
+optional body containing content
+
+
+a RESTful WebApi corresponds to the commonly used HTTP Verbs GET, POST, PUT, DELETE, etc. which represent application state transitions
+
+
+CREATE A SIMPLE DEMO WEB API 101
+add a Models folder with a simple Job POCO
+
+add EntityFrameworkCore.InMemory provider
+
+add DbContext class to Models folder
+
+register DBcontext with InMemory provider in StartUp.ConfigureServices
+
+create a JobController with Add New Item context menu WebApi Controller class - scaffolds a RESTful controller
+add constructor that injects DbContext and initializes it with some sample data
+
+refactor Get() to return IEnumerable<Job>
+build and run to display data - MVC serializes POCO into Json
+
+refactor Get(id) to return Job
+build and run to display data
+
+request id that doen't exist => browser hangs
+refactor Get(int) to return IActionResult
+return NotFound result if no data
+return new ObjectResult(data) if data exsits
+
+refactor Get() to return IActionResult
+
+introduce Postman/Fiddler - review REQUEST and RESPONSE messages
+
+implement Post action method
+return IActionResult
+return BadRequest() if item not provided in message Body
+use DbContext.Add(item) - new with EF Core and DbContect.SaveChanges()
+return CreatedAtRoute to redirect to Get(int) with new Id value, add named attribute to Get(int)
+test with Postman, show Location header
+
+implement Put action method
+return IActionResult
+return BadRequest() if item not provided in message Body or item id does not equal parameter id
+return NotFound() if no existing job
+map item to exiting job
+use DbContext.Update(item) - new with EF Core and DbContect.SaveChanges()
+return NoContentResult() if successful
+test with Postman
+
+implement Delete action method
+return IActionResult
+return NotFound() if no existing job
+use DbContext.Remove(item) - new with EF Core and DbContect.SaveChanges()
+return NoContentResult() if successful
+test with Postman
+

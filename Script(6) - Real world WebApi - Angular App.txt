@@ -1,0 +1,16 @@
+BUILD A REAL WORLD WEB API
+
+ADD SIMPLE ANGULAR 4 APP TO CONCUME WEBAPI
+
+open DSC folder in a command prompt
+
+execute - ng new DSC.NgWebApp
+
+open DSC folder in Visual Studio Code and open console windoow
+cd DSC.NgWebApp
+npm start
+
+view in browser on port 4200
+
+
+
